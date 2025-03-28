@@ -64,40 +64,37 @@ async function readCSV(directory) {
     }
 }
 
-async function writeCSV(readFile, data) { 
+async function writeCSV(directory, readFile, data) { 
     const { headers, values } = data;
-    let fileName = ''; 
-    readFile.includes('street') ? fileName = 'AllStreet.csv' : fileName = 'AllStopAndSearch.csv';
+    let fileName = readFile.includes('street') ? 'AllStreet.csv' : 'AllStopAndSearch.csv';
+    const filePath = path.join(directory,fileName);
+
     try {
-        await fsPromises.access(`${directoryPath}\\${fileName}`, fs.constants.W_OK);
-        console.log(`${fileName} found...`);
-        const writeStream = fs.createWriteStream(`${directoryPath}\\${fileName}`, { encoding: 'utf8', flags: 'a'})
+
+        let fileExists = false;
+        try {
+            await fsPromises.access(filePath, fs.constants.F_OK);
+            console.log(`${fileName} found...`);
+            fileExists = true;
+        } catch {}
+        
+        const writeStream = fs.createWriteStream(filePath, { flags: 'a'});
+        writeStream.on('error', (error) => {
+            console.log(`Error writing to file ${fileName}: ${error.message}`);
+        })
+
+        if (!fileExists){
+            writeStream.write(`${headers.join(',')}\n`);
+        }
+
         for (const value of values) {
-            const valueString = Object.values(value).toString();
-            const overWatermark = writeStream.write(`\n${valueString}`);
-            if (!overWatermark) {
-                await new Promise((resolve) => writeStream.once('drain', resolve));
-            }
+            const valueString = headers.map((header) => value[header]).join(',');
+            writeStream.write(`${valueString}\n`);
         }
         writeStream.end();
-        console.log(`Appending file ${fileName} Complete...`)
+        console.log(`Finnished writing to ${fileName}`)
     } catch (error) {
-        if(error.message.includes('no such file or directory')){
-            const writeStream = fs.createWriteStream(`${directoryPath}\\${fileName}`, { encoding: 'utf8', flags: 'a'})
-            writeStream.write(headers.join(','))
-            for (const value of values) {
-                const valueString = Object.values(value).toString();
-                const overWatermark = writeStream.write(`\n${valueString}`);
-                if (!overWatermark) {
-                    await new Promise((resolve) => writeStream.once('drain', resolve));
-                }
-            }
-            writeStream.end();
-            console.log(`Writing file ${fileName} Complete...`)
-        } else {
-            console.error(`Failed to append file: ${error}`)
-            return;
-        }
+            console.error(`Failed to write CSV file: ${error.message}`);
     } 
 }
 
