@@ -101,25 +101,32 @@ async function writeCSV(readFile, data) {
     } 
 }
 
-async function CSVConcat() {
+async function CSVConcat(directory) {
     try{
-        const folders = fs.readdirSync(directoryPath);
-        for (const folder in folders) {
-            console.log(folders[folder]);
-            const files = fs.readdirSync(`${directoryPath}\\${folders[folder]}`)
-            for (const file in files) {
-                console.log(`   ${files[file]}`);
-                const filePath = `${directoryPath}\\${folders[folder]}\\${files[file]}`;
-                console.log('Reading File...');
-                const data = await readCSV(filePath);
-                console.log('Writing File...');
-                await writeCSV(files[file], data);
-                console.log('File Complete...');
+        const folders = await fsPromises.readdir(directory);
+        for (const folder of folders) {
+            const folderPath = path.join(directory, folder);
+            const stat = await fsPromises.stat(folderPath);
+            if (stat.isDirectory()){
+                console.log(`Processing folder: ${folder}`);
+                const files = await fsPromises.readdir(folderPath);
+                for (const file of files) {
+                    const filePath = path.join(folderPath, file);
+                    if (path.extname(file).toLowerCase() === '.csv'){
+                        console.log(`   Processing file: ${file}`);
+                        const data = await readCSV(filePath);
+                        if (data) {
+                            await writeCSV(file, data);
+                            console.log(`   Processing ${file} complete...`);
+                        }
+                        
+                    }
+                }
             }
         }
     } catch (error) {
-        console.error(`unable to scan directory: ${error.message}`)
+        console.error(`Error processing directories: ${error.message}`)
     }    
 }
 
-CSVConcat();
+CSVConcat(directoryPath);
