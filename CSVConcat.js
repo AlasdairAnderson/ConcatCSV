@@ -1,7 +1,6 @@
 const fs = require('fs');
-const fsPromises = require('node:fs/promises');
-
-const directoryPath = 'Exampledirectory';
+const fsPromises = require('fs').promises;
+const path = require('path');
 
 async function readCSV(directory) {
     const readStream = fs.createReadStream(directory, { encoding: 'utf8'});
@@ -45,7 +44,10 @@ async function readCSV(directory) {
                     object[headers[h]] = val[h]
                 }
                 lastObject = Object.values(object).filter((item) => {if(item){return item}});
-                data.push(object);                
+                if(lastObject.length > 0){
+                    data.push(object);
+                }
+                                
             });
 
             if(headers.length !== 0) {
@@ -113,10 +115,9 @@ async function CSVConcat(directory) {
                         console.log(`   Processing file: ${file}`);
                         const data = await readCSV(filePath);
                         if (data) {
-                            await writeCSV(file, data);
+                            await writeCSV(directory, file, data);
                             console.log(`   Processing ${file} complete...`);
                         }
-                        
                     }
                 }
             }
@@ -125,5 +126,7 @@ async function CSVConcat(directory) {
         console.error(`Error processing directories: ${error.message}`)
     }    
 }
+
+const directoryPath =  path.join('A:', 'PI-56', '07_Topics', '22_Power BI', '07_Internal and External Incident', 'PoliceUKData','AllForces');
 
 CSVConcat(directoryPath);
