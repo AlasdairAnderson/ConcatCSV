@@ -6,9 +6,7 @@ async function readCSV(directory) {
     const readStream = fs.createReadStream(directory, { encoding: 'utf8'});
     try{
         let headers = [];
-        let hasHeaders = false;
         let data = [];
-        let lastObject = [];
         let buffer = '';
         for await (const chunk of readStream) {
             console.log('   loading chunck...');
