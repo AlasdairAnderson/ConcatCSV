@@ -4,7 +4,7 @@ This application takes multiple CSV's that you might get from a data dump and jo
 I desided to use JavaScript to complete this task due to the fact that this is the main language that I am learning at the moment and I wanted to get a better understanding of how to use it's `fs` library to read, compute and write information from one file to another.
 I know that a language like Python would probably be more performant for this tasks but the secondary aim of this application was to getter a better understanding of JS.
 ## Challenges
-During the implomentation of this project I faced a few chalanges that I had to firgure out:
+During the implomentation of this project I faced a few challenges that I had to firgure out:
 ### The chuncking of createReadStream creating incomplete lines of data:
 To mitigate this issue I had to ensure that I had a buffer of the last line of data that was processed in the chunck. If this last line was had less data than the expected amount of data (derived from the number of headers) of the first line of the next chunck and less data then
 the expected amount of data then the application will identify the information that had been missed off using the headers and patch it into the last line of data.
